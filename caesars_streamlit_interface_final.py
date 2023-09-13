@@ -30,11 +30,11 @@ def correlation_analysis(df):
 
     st.subheader("Correlation Explanation")
 
-    st.write("Correlation values range from -1 to 1, with -1 denoting a perfect negative linear relationship, 0 indicating no linear relationship, and 1 signifying a perfect positive linear relationship. The closer the value is to -1 or 1, the stronger the linear relationship. In the matrix, we observe the two most correlated features with churn.")
+    st.write("Correlation values range from -1 to 1, with -1 denoting a perfect negative linear relationship, 0 indicating no linear relationship, and 1 signifying a perfect positive linear relationship. The closer the value is to -1 or 1, the stronger the linear relationship. In the matrix, we observe the most correlated feature with churn is:")
 
     # Find the 2 most highly correlated features with churn
     churn_correlation = correlation_matrix['Churn'].drop('Churn')
-    top_correlated_features = churn_correlation.abs().sort_values(ascending=False).head(2)
+    top_correlated_features = churn_correlation.abs().sort_values(ascending=False).head(1)
 
     for feature, correlation in top_correlated_features.items():
         st.write(f"{feature}: {correlation:.2f}")
