@@ -5,6 +5,8 @@ import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
 import base64
 import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def count_distinct_customers(df):
     return len(df['CustomerID'].unique())
@@ -13,6 +15,30 @@ def proportion_high_churn_likelihood(df):
     high_churn_df = df[df['Churn_Prediction_Probability'] >= 0.8]
     proportion = len(high_churn_df) / len(df) * 100
     return proportion
+
+def correlation_analysis(df):
+    numeric_columns = df.select_dtypes(include=['number'])
+    correlation_matrix = numeric_columns.corr()
+
+    st.subheader("Correlation Analysis")
+    st.write("A correlation matrix helps identify which input features are most closely correlated with the target prediction variable i.e. which columns in the dataset are correlated with churn. Here's the correlation matrix:")
+
+    # Create a heatmap to visualize the correlation matrix
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5, ax=ax)
+    st.pyplot(fig)
+
+    st.subheader("Correlation Explanation")
+
+    st.write("A correlation value can range from -1 to 1, where a correlation of -1 indicates a perfect negative linear relationship; a correlation of 0 indicates no linear relationship (no association); a correlation of 1 indicates a perfect positive linear relationship.The closer the correlation value is to -1 or 1, the stronger the linear relationship between the two features. The matrix shows that these are the 2 most correlated features with churn:")
+
+    # Find the 2 most highly correlated features with churn
+    churn_correlation = correlation_matrix['Churn'].drop('Churn')
+    top_correlated_features = churn_correlation.abs().sort_values(ascending=False).head(2)
+
+    for feature, correlation in top_correlated_features.items():
+        st.write(f"{feature}: {correlation:.2f}")
+
 
 def main():
     
@@ -52,6 +78,8 @@ def main():
                 st.error(f"An error occurred while reading the file: {e}")
                 return
 
+
+
             # Preprocess the uploaded data (similar to the original code)
             df.fillna(0, inplace=True)
             label_encoders = {}
@@ -61,9 +89,8 @@ def main():
                 df[column] = le.fit_transform(df[column])
                 label_encoders[column] = le
 
-            # Convert CustomerID column to strings
-            df['CustomerID'] = df['CustomerID'].astype(str)
-
+            correlation_analysis(df)
+            
             X = df.drop(['CustomerID', 'Churn'], axis=1)
 
             # Predict churn probabilities using the trained model
@@ -78,11 +105,10 @@ def main():
 
             # Count distinct customer IDs
             distinct_customers = count_distinct_customers(df)
-            st.write(f"Total Number of Distinct Customer IDs: {distinct_customers}")
+            #st.write(f"Total Number of Distinct Customer IDs: {distinct_customers}")
 
             # Calculate the proportion of customers with high churn likelihood
             churn_proportion = proportion_high_churn_likelihood(df)
-            st.write(f"Proportion of Customers with High Churn Likelihood >= 80%: {churn_proportion:.2f}%")
             
             # Create a pie chart
             pie_chart_data = pd.DataFrame({
@@ -95,12 +121,11 @@ def main():
             
             # Display the DataFrame
             st.subheader("Customer Churn Predictions")
+            st.write(f"Proportion of Customers with High Churn Likelihood >= 80%: {churn_proportion:.2f}%")
             
             
             st.write(prediction_df)
             
-            
-
 
 if __name__ == "__main__":
     main()
