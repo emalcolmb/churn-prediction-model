@@ -102,6 +102,9 @@ def main():
             
             # Create a DataFrame to display customer IDs and their associated predictions
             prediction_df = sorted_data[['CustomerID', 'Churn_Prediction_Probability']]
+            
+            # Convert 'CustomerID' column to strings
+            prediction_df['CustomerID'] = prediction_df['CustomerID'].astype(str)
 
             # Count distinct customer IDs
             distinct_customers = count_distinct_customers(df)
